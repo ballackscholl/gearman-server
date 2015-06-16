@@ -1,7 +1,22 @@
 #!/usr/bin/env python
 
+import logging
+import logging.config
 from dangagearman.server import GearmanServer
+from optparse import OptionParser
+
+logging.config.fileConfig("log.conf")
+
+optionParser = OptionParser("usage: %prog [options] arg1 arg2")
+optionParser.add_option("-p","--port",action = "store",type="int",
+                        dest = "port", default=4730, help="port")
+optionParser.add_option("-b","--backlog",action = "store",type="int",
+                        dest = "backlog", default=64, help="listen backlog")
+optionParser.add_option("-t","--trytimes",action = "store",type="int",
+                        dest = "trytimes", default=0, help="trytimes")
+
 
 if __name__ == "__main__":
-    server = GearmanServer()
+    (options, args) = optionParser.parse_args()
+    server = GearmanServer(port=options.port, trytimes=options.trytimes, backlog=options.backlog)
     server.start()

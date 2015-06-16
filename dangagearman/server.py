@@ -21,7 +21,10 @@ class GearmanServerClient(asyncore.dispatcher):
         return len(self.out_buffer) != 0
 
     def handle_close(self):
-        self.close()
+        try:
+            self.close()
+        except Exception:
+            logging.error('close error %s'%self.addr)
         self.manager.deregister_client(self)
 
     def handle_read(self):
@@ -32,7 +35,6 @@ class GearmanServerClient(asyncore.dispatcher):
 
         self.in_buffer += data
 
-        commands = []
         while True:
             try:
                 func, args, cmd_len = parse_command(self.in_buffer, response=False)
@@ -105,6 +107,9 @@ class GearmanServerClient(asyncore.dispatcher):
         elif func == "shutdown":
             # TODO: optional "graceful" argument - close listening socket and let all existing connections complete
             self.server.stop()
+        elif func == "client_id":
+            #TODO
+            pass
         else:
             logging.error("Unhandled command %s: %s" % (func, args))
 
@@ -114,7 +119,7 @@ class GearmanServerClient(asyncore.dispatcher):
 
         try:
             nsent = self.send(self.out_buffer)
-        except socket.error, e:
+        except socket.error:
             self.close()
             return
 
@@ -159,7 +164,7 @@ class ClientState(object):
         self.working = []
 
 class GearmanTaskManager(object):
-    def __init__(self):
+    def __init__(self, trytimes=0):
         self.max_id = 0
         self.states = {}     # {client: ClientState}
         self.jobqueue = {}   # {function, [job]}
@@ -167,6 +172,7 @@ class GearmanTaskManager(object):
         self.uniq_jobs = {}  # {function: {uniq: job}}
         self.workers = {}    # {function: [state]}
         self.working = set() # set([job])
+        self.trytimes = trytimes
 
     def add_job(self, client, func, arg, uniq=None, high=False, bg=False):
         state = self.states[client]
@@ -178,9 +184,13 @@ class GearmanTaskManager(object):
             self.jobqueue[func].append(job)
         self.jobs[job.handle] = job
         workers = self.workers.get(func, [])
+        wakeTimes = 0
         for w in workers:
             if w.sleeping:
+                if self.trytimes and wakeTimes > self.trytimes:
+                    break
                 w.client.wakeup()
+                wakeTimes = wakeTimes + 1
         return job.handle
 
     def can_do(self, client, func, timeout=None):
@@ -269,8 +279,12 @@ class GearmanTaskManager(object):
         self.states[client] = ClientState(client)
 
     def deregister_client(self, client):
-        state = self.states[client]
-        del self.states[client]
+        try:
+            state = self.states[client]
+            del self.states[client]
+        except KeyError:
+            logging.error('deregister_client not found %s'%client.addr)
+            return
 
         for f in state.abilities:
             self.workers[f].remove(state)
@@ -284,13 +298,13 @@ class GearmanTaskManager(object):
         return str(self.max_id)
 
 class GearmanServer(asyncore.dispatcher):
-    def __init__(self, host="127.0.0.1", port=DEFAULT_PORT):
+    def __init__(self, host="127.0.0.1", port=DEFAULT_PORT, trytimes=0, backlog=64):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
         self.bind((host, port))
-        self.listen(5)
-        self.manager = GearmanTaskManager()
+        self.listen(backlog)
+        self.manager = GearmanTaskManager(trytimes=trytimes)
 
     def handle_accept(self):
         sock, addr = self.accept()
