@@ -294,6 +294,9 @@ class GearmanTaskManager(object):
             self.jobqueue[j.func].remove(j)
 
     def new_handle(self):
+        #2^32
+        if self.max_id >= 4294967295:
+            self.max_id = 0
         self.max_id += 1
         return str(self.max_id)
 
