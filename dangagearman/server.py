@@ -107,9 +107,9 @@ class GearmanServerClient(asyncore.dispatcher):
         elif func == "shutdown":
             # TODO: optional "graceful" argument - close listening socket and let all existing connections complete
             self.server.stop()
-        elif func == "client_id":
+        elif func == "set_client_id":
             if self in self.manager.states:
-                self.manager.states[self].client_id = args
+                self.manager.states[self].client_id = args['client_id']
         else:
             logging.error("Unhandled command %s: %s" % (func, args))
 
