@@ -237,12 +237,21 @@ class GearmanTaskManager(object):
         return True
 
     def work_complete(self, client, handle, result):
-        job = self.jobs[handle]
+        try:
+            job = self.jobs[handle]
+        except KeyError:
+            logging.error('work_complete jod not found handle:%s'%str(handle))
+            return
         job.owner.client.work_complete(handle, result)
         self._remove_job(job)
 
     def work_fail(self, client, handle):
-        job = self.jobs[handle]
+        try:
+            job = self.jobs[handle]
+        except KeyError:
+            logging.error('work_fail jod not found handle:%s'%str(handle))
+            return
+
         job.owner.client.work_fail(handle)
         self._remove_job(job)
 
@@ -284,7 +293,7 @@ class GearmanTaskManager(object):
             state = self.states[client]
             del self.states[client]
         except KeyError:
-            logging.error('deregister_client not found %s'%client.addr)
+            logging.error('deregister_client not found %s'%str(client.addr))
             return
 
         for f in state.abilities:
