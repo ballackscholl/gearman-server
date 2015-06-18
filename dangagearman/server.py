@@ -250,10 +250,11 @@ class GearmanTaskManager(object):
             job = self.jobs[handle]
         except KeyError:
             logging.error('work_fail jod not found handle:%s'%str(handle))
-            return
+            return False
 
         job.owner.client.work_fail(handle)
         self._remove_job(job)
+        return True
 
     def _remove_job(self, job):
         job.owner.jobs.remove(job)
@@ -281,9 +282,10 @@ class GearmanTaskManager(object):
         to_fail = []
         for job in self.working:
             if job.timeout and job.timeout < now:
-                to_fail.append(job.handle)
-        for handle in to_fail:
-            self.work_fail(None, handle)
+                to_fail.append(job)
+        for job in to_fail:
+            if not self.work_fail(None, job.handle):
+                self.working.remove(job)
 
     def register_client(self, client):
         self.states[client] = ClientState(client)
