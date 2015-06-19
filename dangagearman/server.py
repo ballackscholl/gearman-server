@@ -313,11 +313,11 @@ class GearmanTaskManager(object):
         return str(self.max_id)
 
 class GearmanServer(asyncore.dispatcher):
-    def __init__(self, host="127.0.0.1", port=DEFAULT_PORT, trytimes=0, backlog=64):
+    def __init__(self, port=DEFAULT_PORT, trytimes=0, backlog=64):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
-        self.bind((host, port))
+        self.bind(('', port))
         self.listen(backlog)
         self.manager = GearmanTaskManager(trytimes=trytimes)
 
