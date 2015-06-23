@@ -328,7 +328,7 @@ class GearmanServer(asyncore.dispatcher):
     def start(self):
         self.running = True
         while self.running:
-            asyncore.loop(timeout=1, use_poll=True, count=1)
+            asyncore.loop(timeout=1, use_poll=True, count=2)
             self.manager.check_timeouts()
 
     def stop(self):
