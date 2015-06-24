@@ -70,7 +70,8 @@ epoll_possible = False
 epoll_fd = None
 if hasattr(select, 'epoll'):
     epoll_fd = select.epoll()
-    epoll_possible = True
+    if epoll_fd is not None:
+        epoll_possible = True
 
 def _strerror(err):
     try:
