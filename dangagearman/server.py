@@ -17,6 +17,9 @@ class GearmanServerClient(asyncore.dispatcher):
         self.out_buffer = ""
         manager.register_client(self)
 
+    def log_info(self, message, type='info'):
+        logging.warning(message)
+
     def writable(self):
         return len(self.out_buffer) != 0
 
