@@ -238,9 +238,6 @@ def poll3(timeout=0.0, map=None):
         else:
             readwrite(obj, flags)
 
-
-                          # Alias for backward compatibility
-
 def loop(timeout=30.0, use_poll=False, map=None, count=None):
     if map is None:
         map = socket_map
