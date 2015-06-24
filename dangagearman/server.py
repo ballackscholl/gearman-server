@@ -2,7 +2,7 @@
 import logging
 import random
 import time
-import asyncore
+import eventloop as asyncore
 import socket
 from collections import deque
 from dangagearman.protocol import DEFAULT_PORT, ProtocolError, parse_command, pack_command
@@ -24,13 +24,12 @@ class GearmanServerClient(asyncore.dispatcher):
         try:
             self.close()
         except Exception:
-            logging.error('close error %s'%self.addr)
+            logging.error('close error %s'%str(self.addr))
         self.manager.deregister_client(self)
 
     def handle_read(self):
         data = self.recv(8192)
         if not data:
-            self.close()
             return
 
         self.in_buffer += data
