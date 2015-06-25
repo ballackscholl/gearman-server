@@ -212,6 +212,7 @@ class GearmanTaskManager(object):
 
     def grab_job(self, client, grab=True):
         state = self.states[client]
+        state.sleeping = False
         abilities = state.abilities.keys()
         random.shuffle(abilities)
         for f in abilities:
