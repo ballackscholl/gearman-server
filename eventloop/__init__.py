@@ -242,7 +242,7 @@ def loop(timeout=30.0, use_poll=False, map=None, count=None):
     if map is None:
         map = socket_map
 
-    if epoll_possible:
+    if use_poll and epoll_possible:
         poll_fun = poll3
     elif use_poll and hasattr(select, 'poll'):
         poll_fun = poll2
