@@ -190,7 +190,6 @@ class GearmanTaskManager(object):
         for w in workers:
             if w.sleeping:
                 if self.trytimes and wakeTimes > self.trytimes:
-                    logging.warning('not found sleep worker fun:%s'%func)
                     break
                 w.client.wakeup()
                 wakeTimes = wakeTimes + 1
