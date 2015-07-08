@@ -283,6 +283,7 @@ class dispatcher:
             # get a socket from a blocking source.
             sock.setblocking(0)
             self.set_socket(sock, map)
+            self.set_no_delay()
             self.connected = True
             # The constructor no longer requires that the socket
             # passed be connected.
@@ -356,6 +357,15 @@ class dispatcher:
                 socket.SOL_SOCKET, socket.SO_REUSEADDR,
                 self.socket.getsockopt(socket.SOL_SOCKET,
                                        socket.SO_REUSEADDR) | 1
+                )
+        except socket.error:
+            pass
+
+    def set_no_delay(self):
+        # set Nagle disable
+        try:
+            self.socket.setsockopt(
+                socket.IPPROTO_TCP, socket.TCP_NODELAY, 1
                 )
         except socket.error:
             pass
