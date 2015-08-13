@@ -284,6 +284,7 @@ class dispatcher:
             sock.setblocking(0)
             self.set_socket(sock, map)
             self.set_no_delay()
+            self.set_keepalive()
             self.connected = True
             # The constructor no longer requires that the socket
             # passed be connected.
@@ -360,6 +361,16 @@ class dispatcher:
                 )
         except socket.error:
             pass
+
+
+    def set_keepalive(self):
+        try:
+            self.socket.setsockopt(
+                socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1
+                )
+        except socket.error:
+            pass
+
 
     def set_no_delay(self):
         # set Nagle disable
