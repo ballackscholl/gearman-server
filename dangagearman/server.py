@@ -79,6 +79,8 @@ class GearmanServerClient(asyncore.dispatcher):
                 self.wakeup()
         elif func == "work_complete":
             self.manager.work_complete(self, **args)
+        elif func == "work_data":
+            self.manager.work_data(self, **args)
         elif func == "work_fail":
             self.manager.work_fail(self, **args)
         # Text commands
@@ -138,6 +140,9 @@ class GearmanServerClient(asyncore.dispatcher):
 
     def work_complete(self, handle, result):
         self.send_command('work_complete', {'handle':handle, 'result':result})
+
+    def work_data(self, handle, data):
+        self.send_command('work_data', {'handle':handle, 'data':data})
 
     def work_fail(self, handle):
         self.send_command('work_fail', {'handle':handle})
@@ -246,6 +251,14 @@ class GearmanTaskManager(object):
             return
         job.owner.client.work_complete(handle, result)
         self._remove_job(job)
+
+    def work_data(self, client, handle, data):
+        try:
+            job = self.jobs[handle]
+        except KeyError:
+            logging.error('work_data jod not found handle:%s'%str(handle))
+            return
+        job.owner.client.work_data(handle, data)
 
     def work_fail(self, client, handle):
         try:

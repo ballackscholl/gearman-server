@@ -34,6 +34,8 @@ COMMANDS = {
     19: ("error", ["err_code", "err_text"]),
 
     24: ("all_yours", []),
+
+    28: ("work_data", ["handle", "data"]),
 }
 # Create a mapping of function name -> id, args
 R_COMMANDS = dict((m[0], (mid, m[1])) for mid, m in COMMANDS.iteritems())
