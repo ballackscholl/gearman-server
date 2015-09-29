@@ -14,9 +14,15 @@ optionParser.add_option("-b","--backlog",action = "store",type="int",
                         dest = "backlog", default=64, help="listen backlog")
 optionParser.add_option("-t","--trytimes",action = "store",type="int",
                         dest = "trytimes", default=0, help="trytimes")
+optionParser.add_option("-l","--loopcount",action = "store",type="int",
+                        dest = "loopcount", default=0, help="loopcount")
 
 
 if __name__ == "__main__":
     (options, args) = optionParser.parse_args()
-    server = GearmanServer(port=options.port, trytimes=options.trytimes, backlog=options.backlog)
+    if options.loopcount == 0:
+        loopCount = None
+    else:
+        loopCount = options.loopcount
+    server = GearmanServer(port=options.port, trytimes=options.trytimes, backlog=options.backlog, loopCount=loopCount)
     server.start()

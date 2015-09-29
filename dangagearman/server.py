@@ -328,12 +328,13 @@ class GearmanTaskManager(object):
         return str(self.max_id)
 
 class GearmanServer(asyncore.dispatcher):
-    def __init__(self, port=DEFAULT_PORT, trytimes=0, backlog=64):
+    def __init__(self, port=DEFAULT_PORT, trytimes=0, backlog=64, loopCount=None):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
         self.bind(('', port))
         self.listen(backlog)
+        self.loopCount = loopCount
         self.manager = GearmanTaskManager(trytimes=trytimes)
 
     def handle_accept(self):
@@ -343,7 +344,7 @@ class GearmanServer(asyncore.dispatcher):
     def start(self):
         self.running = True
         while self.running:
-            asyncore.loop(timeout=1, use_poll=True, count=2)
+            asyncore.loop(timeout=1, use_poll=True, count=self.loopCount)
             self.manager.check_timeouts()
 
     def stop(self):
