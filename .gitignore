@@ -1,3 +1,6 @@
 .idea/*
 log/*.log
 *.pyc
+.svn/format
+*.svn-base
+.svn/wc.db
