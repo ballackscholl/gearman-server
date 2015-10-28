@@ -57,6 +57,7 @@ class GearmanServerClient(asyncore.dispatcher):
             self.send_command("echo_res", args)
         elif func == "submit_job":
             handle = self.manager.add_job(self, **args)
+            logging.info('submit_job:%s'%handle)
             self.send_command("job_created", {'handle': handle})
         elif func == "submit_job_high":
             handle = self.manager.add_job(self, high=True, **args)
@@ -71,6 +72,7 @@ class GearmanServerClient(asyncore.dispatcher):
         elif func == "grab_job":
             job = self.manager.grab_job(self)
             if job:
+                logging.info("grep addr:%s handle:%s"%(self.addr, job.handle))
                 self.send_command("job_assign", {'handle':job.handle, 'func':job.func, 'arg':job.arg})
             else:
                 self.send_command("no_job")
@@ -249,6 +251,7 @@ class GearmanTaskManager(object):
         except KeyError:
             logging.error('work_complete jod not found handle:%s'%str(handle))
             return
+        logging.info('work_complete:%s'%handle)
         job.owner.client.work_complete(handle, result)
         self._remove_job(job)
 
@@ -298,9 +301,12 @@ class GearmanTaskManager(object):
         for job in self.working:
             if job.timeout and job.timeout < now:
                 to_fail.append(job)
+        logRemoved=[]
         for job in to_fail:
             if not self.work_fail(None, job.handle):
+                logRemoved.append(job.handle)
                 self.working.remove(job)
+        logging.warning("job overtime:%s has removed"%logRemoved)
 
     def register_client(self, client):
         self.states[client] = ClientState(client)
