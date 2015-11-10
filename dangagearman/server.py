@@ -301,12 +301,12 @@ class GearmanTaskManager(object):
         for job in self.working:
             if job.timeout and job.timeout < now:
                 to_fail.append(job)
-        logRemoved=[]
+        #logRemoved=[]
         for job in to_fail:
             if not self.work_fail(None, job.handle):
-                logRemoved.append(job.handle)
+                #logRemoved.append(job.handle)
                 self.working.remove(job)
-        logging.warning("job overtime:%s has removed"%logRemoved)
+        #logging.info("job overtime:%s has removed"%logRemoved)
 
     def register_client(self, client):
         self.states[client] = ClientState(client)
