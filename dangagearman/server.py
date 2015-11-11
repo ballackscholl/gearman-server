@@ -2,6 +2,7 @@
 import logging
 import random
 import time
+import traceback
 import eventloop as asyncore
 import socket
 from collections import deque
@@ -350,7 +351,11 @@ class GearmanServer(asyncore.dispatcher):
     def start(self):
         self.running = True
         while self.running:
-            asyncore.loop(timeout=1, use_poll=True, count=self.loopCount)
+            try:
+                asyncore.loop(timeout=1, use_poll=True, count=self.loopCount)
+            except Exception,e:
+                logging.error(e)
+                logging.error(traceback.format_exc())
             self.manager.check_timeouts()
 
     def stop(self):
