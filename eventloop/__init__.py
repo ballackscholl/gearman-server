@@ -112,15 +112,25 @@ def _exception(obj):
 
 def readwrite(obj, flags):
     try:
-        if (flags & select.POLLIN) or (flags & select.EPOLLIN):
-            obj.handle_read_event()
-        if (flags & select.POLLOUT) or (flags & select.EPOLLOUT):
-            obj.handle_write_event()
-        if (flags & select.POLLPRI) or (flags & select.EPOLLPRI):
-            obj.handle_expt_event()
-        if (flags & (select.POLLHUP | select.POLLERR | select.POLLNVAL)) \
-                or (flags & (select.EPOLLHUP | select.EPOLLERR)):
-            obj.handle_close()
+        if epoll_possible and dispatcher.use_epoll:
+            if flags & select.EPOLLIN:
+                obj.handle_read_event()
+            if flags & select.EPOLLOUT:
+                obj.handle_write_event()
+            if flags & select.EPOLLPRI:
+                obj.handle_expt_event()
+            if flags & (select.EPOLLHUP | select.EPOLLERR):
+                obj.handle_close()
+        else:
+            if flags & select.POLLIN:
+                obj.handle_read_event()
+            if flags & select.POLLOUT:
+                obj.handle_write_event()
+            if flags & select.POLLPRI:
+                obj.handle_expt_event()
+            if flags & (select.POLLHUP | select.POLLERR | select.POLLNVAL):
+                obj.handle_close()
+
     except socket.error, e:
         if e.args[0] not in _DISCONNECTED:
             obj.handle_error()
