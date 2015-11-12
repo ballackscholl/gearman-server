@@ -276,9 +276,13 @@ class GearmanTaskManager(object):
         return True
 
     def _remove_job(self, job):
-        job.owner.jobs.remove(job)
-        job.worker.working.remove(job)
-        self.working.discard(job)
+        try:
+            job.owner.jobs.remove(job)
+            job.worker.working.remove(job)
+            self.working.discard(job)
+        except ValueError:
+            logging.warning("job has been removed %s"%job.handle)
+
 
     def get_status(self, client):
         funcs = set(self.workers.keys()) | set(self.jobqueue.keys())
@@ -302,12 +306,10 @@ class GearmanTaskManager(object):
         for job in self.working:
             if job.timeout and job.timeout < now:
                 to_fail.append(job)
-        #logRemoved=[]
+
         for job in to_fail:
             if not self.work_fail(None, job.handle):
-                #logRemoved.append(job.handle)
                 self.working.remove(job)
-        #logging.info("job overtime:%s has removed"%logRemoved)
 
     def register_client(self, client):
         self.states[client] = ClientState(client)
