@@ -355,10 +355,11 @@ class GearmanServer(asyncore.dispatcher):
         while self.running:
             try:
                 asyncore.loop(timeout=1, use_poll=True, count=self.loopCount)
+                self.manager.check_timeouts()
             except Exception,e:
                 logging.error(e)
                 logging.error(traceback.format_exc())
-            self.manager.check_timeouts()
+
 
     def stop(self):
         self.running = False
