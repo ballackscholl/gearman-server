@@ -4,3 +4,5 @@ log/*.log
 .svn/format
 *.svn-base
 .svn/wc.db
+.svn/all-wcprops
+.svn/entries
