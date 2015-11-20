@@ -6,3 +6,11 @@ log/*.log
 .svn/wc.db
 .svn/all-wcprops
 .svn/entries
+*.project
+dangagearman/.svn/all-wcprops
+eventloop/.svn/all-wcprops
+log/.svn/all-wcprops
+log/.svn/entries
+dangagearman/.svn/entries
+eventloop/.svn/entries
+log/.svn/dir-prop-base
