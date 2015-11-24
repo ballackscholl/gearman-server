@@ -16,7 +16,7 @@ COMMANDS = {
     21: ("submit_job_high", ["func", "uniq", "arg"]),
     18: ("submit_job_bg", ["func", "uniq", "arg"]),
 
-     8: ("job_created", ["handle"]),
+     8: ("job_created", ["handle", "uniq"]),
      9: ("grab_job", []),
     10: ("no_job", []),
     11: ("job_assign", ["handle", "func", "arg"]),

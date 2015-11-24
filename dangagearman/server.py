@@ -57,15 +57,15 @@ class GearmanServerClient(asyncore.dispatcher):
         if func == "echo_req":
             self.send_command("echo_res", args)
         elif func == "submit_job":
-            handle = self.manager.add_job(self, **args)
+            handle, uniq = self.manager.add_job(self, **args)
             logging.info('submit_job:%s'%handle)
-            self.send_command("job_created", {'handle': handle})
+            self.send_command("job_created", {'handle': handle, 'uniq':uniq})
         elif func == "submit_job_high":
-            handle = self.manager.add_job(self, high=True, **args)
-            self.send_command("job_created", {'handle': handle})
+            handle, uniq = self.manager.add_job(self, high=True, **args)
+            self.send_command("job_created", {'handle': handle, 'uniq':uniq})
         elif func == "submit_job_bg":
-            handle = self.manager.add_job(self, bg=True, **args)
-            self.send_command("job_created", {'handle': handle})
+            handle, uniq = self.manager.add_job(self, bg=True, **args)
+            self.send_command("job_created", {'handle': handle, 'uniq':uniq})
         elif func in ("can_do", "can_do_timeout"):
             self.manager.can_do(self, **args)
         elif func == "cant_do":
@@ -201,7 +201,7 @@ class GearmanTaskManager(object):
                     break
                 w.client.wakeup()
                 wakeTimes = wakeTimes + 1
-        return job.handle
+        return job.handle, uniq
 
     def can_do(self, client, func, timeout=None):
         state = self.states[client]
@@ -250,7 +250,7 @@ class GearmanTaskManager(object):
         try:
             job = self.jobs[handle]
         except KeyError:
-            logging.error('work_complete jod not found handle:%s'%str(handle))
+            logging.error('work_complete job not found handle:%s'%str(handle))
             return
         logging.info('work_complete:%s'%handle)
         job.owner.client.work_complete(handle, result)
@@ -260,7 +260,7 @@ class GearmanTaskManager(object):
         try:
             job = self.jobs[handle]
         except KeyError:
-            logging.error('work_data jod not found handle:%s'%str(handle))
+            logging.error('work_data job not found handle:%s'%str(handle))
             return
         job.owner.client.work_data(handle, data)
 
@@ -268,7 +268,7 @@ class GearmanTaskManager(object):
         try:
             job = self.jobs[handle]
         except KeyError:
-            logging.error('work_fail jod not found handle:%s'%str(handle))
+            logging.error('work_fail job not found handle:%s'%str(handle))
             return False
 
         job.owner.client.work_fail(handle)
